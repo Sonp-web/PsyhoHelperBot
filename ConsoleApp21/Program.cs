@@ -1,5 +1,6 @@
 ﻿
 using ConsoleApp21.Services;
+using ConsoleApp21.StateMchine;
 using Newtonsoft.Json;
 using Telegram.Bot;
 
@@ -20,6 +21,8 @@ class Program
 
         var botClient = new TelegramBotClient(secrets.ApiKeys.TelegramKey);
         var subscriptionService = new SubscriptionService(botClient, settings.SubscribeChannelId);
+
+        var chatStateMachine = new ChatStateMachine(botClient);
         
         var telegramBotController = new TelegramBotController(botClient,subscriptionService);
         telegramBotController.StartBot();
