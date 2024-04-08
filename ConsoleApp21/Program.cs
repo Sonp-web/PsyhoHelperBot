@@ -1,6 +1,7 @@
 ﻿
 using ConsoleApp21.Services;
 using ConsoleApp21.StateMchine;
+using ConsoleApp21.StateMchine.States;
 using Newtonsoft.Json;
 using Telegram.Bot;
 
@@ -21,10 +22,13 @@ class Program
 
         var botClient = new TelegramBotClient(secrets.ApiKeys.TelegramKey);
         var subscriptionService = new SubscriptionService(botClient, settings.SubscribeChannelId);
-
-        var chatStateMachine = new ChatStateMachine(botClient);
+        IChatGptService chatGptService = new ChatGptService(secrets.ApiKeys.OpenAiKey, settings);
         
-        var telegramBotController = new TelegramBotController(botClient,subscriptionService);
+        var chatStateMachine = new ChatStateMachine(botClient,settings,chatGptService);
+        var chatStateController = new ChatStateController(chatStateMachine);
+        
+        var telegramBotController = new TelegramBotController(botClient,subscriptionService,chatStateController);
+        
         telegramBotController.StartBot();
         await Task.Delay(Timeout.Infinite);
 

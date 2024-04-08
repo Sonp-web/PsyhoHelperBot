@@ -1,4 +1,5 @@
 using ConsoleApp21.Services;
+using ConsoleApp21.StateMchine.States;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;
@@ -12,11 +13,13 @@ public class TelegramBotController
 {
     private readonly ITelegramBotClient _botClient;
     private readonly SubscriptionService _subscriptionService;
+    private readonly ChatStateController _chatStateController;
 
-    public TelegramBotController(ITelegramBotClient botClient,SubscriptionService subscriptionService)
+    public TelegramBotController(ITelegramBotClient botClient,SubscriptionService subscriptionService,ChatStateController chatStateController)
     {
         _botClient = botClient;
         _subscriptionService = subscriptionService;
+        _chatStateController = chatStateController;
     }
 
     public void StartBot()
@@ -39,7 +42,7 @@ public class TelegramBotController
 
     private async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update,CancellationToken cancellationToken)
     {
-        if (update.Message==null && update.Type ==null )
+        if (update.Message==null && update.CallbackQuery ==null )
         {
             return;
         }
@@ -81,17 +84,15 @@ public class TelegramBotController
             await DeleteMessageAsync(userId, messageId, cancellationToken);
 
         }
-            if (await _subscriptionService.IsSubscribed(userId))
-            {
-                response = "Вы подписаны";
-                await _botClient.SendTextMessageAsync(userId, response, cancellationToken: cancellationToken);
-
-            }
-            else
-            {
-                response = "Безлимитное использование бота доступно подписчикам канала";
-                await SendSubscriptionMessage(userId, response);
-            }
+        if (await _subscriptionService.IsSubscribed(userId))
+        {
+            await _chatStateController.HandleUpdate(update);
+        }
+        else
+        {
+            response = "Безлимитное использование бота доступно подписчикам канала";
+            await SendSubscriptionMessage(userId, response);
+        }
         
 
     }

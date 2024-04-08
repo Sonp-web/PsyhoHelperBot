@@ -9,9 +9,11 @@ public class ChatStateMachine
     private readonly ConcurrentDictionary<long, ChatStateBase> _chatStates = new();
     private readonly Dictionary<Type, Func<ChatStateBase>> _states = new();
 
-    public ChatStateMachine(ITelegramBotClient botClient)
+    public ChatStateMachine(ITelegramBotClient botClient,AppSettings settings,IChatGptService chatGptService)
     {
         _states[typeof(IdleState)] = () => new IdleState(this);
+        _states[typeof(StartState)] = () => new StartState(this,botClient,settings.AgencyName,chatGptService);
+       
     }
 
     public ChatStateBase GetState(long chatId)
