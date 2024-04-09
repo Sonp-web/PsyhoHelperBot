@@ -26,15 +26,16 @@ public class StartState:ChatStateBase
                       $"Я первый психологический бот с искусственным интелектом, созданный агенством психологической поддержки *{_agencyName}*\n" +
                       "Я могу оказать Вам мгновенную первичную консультацию по любому интересующему Вас вопросу или передать Ваши данные нашему специалисту для более детальной консультации.";
         
-        var inlineKeyboardMarkup = new InlineKeyboardMarkup(new[]
+        var replyMarkup = new InlineKeyboardMarkup(new[]
         {
             new[]
             {
-                InlineKeyboardButton.WithCallbackData("",GlobalData.QUESTION),
-                InlineKeyboardButton.WithCallbackData("",GlobalData.SPECIALIST), 
+                InlineKeyboardButton.WithCallbackData("Задать вопрос",GlobalData.QUESTION),
+                InlineKeyboardButton.WithCallbackData("Консультация специалиста",GlobalData.SPECIALIST)
             }
         });
-        await _botClient.SendTextMessageAsync(chatId: chatId, message,replyMarkup:inlineKeyboardMarkup);
+        await _botClient.SafeSendTextMessageAsync( chatId, message,replyMarkup:replyMarkup);
+        
         await _stateMachine.TransitTo<IdleState>(chatId);
     }
 

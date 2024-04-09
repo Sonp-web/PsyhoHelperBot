@@ -8,6 +8,7 @@ namespace ConsoleApp21.Services;
 public class SubscriptionService
 {
     public ChatId SubscribeChatId { get; set; }
+    public ChatId ManagerChannelId { get; set; }
     private ITelegramBotClient _botClient;
     private List<ChatMemberStatus> _allowedStatuses=new()
     {
@@ -16,10 +17,11 @@ public class SubscriptionService
         ChatMemberStatus.Creator
     };
 
-    public SubscriptionService(ITelegramBotClient botClient, ChatId subscribeChatId)
+    public SubscriptionService(ITelegramBotClient botClient, ChatId subscribeChatId,ChatId managerChannelId)
     {
         _botClient = botClient;
         SubscribeChatId = subscribeChatId;
+        ManagerChannelId = managerChannelId;
     }
 
     public async Task<bool> IsSubscribed(long userId)

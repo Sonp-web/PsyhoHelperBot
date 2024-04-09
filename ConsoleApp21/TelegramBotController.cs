@@ -100,7 +100,15 @@ public class TelegramBotController
     private async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception,
         CancellationToken cancellationToken)
     {
-        Console.WriteLine(exception);
+        var requestException = exception switch
+        {
+            ApiRequestException apiRequestException => apiRequestException,
+            _ => exception
+        };
+
+        var errorText = "Произошла критическая ошибка. Требуется *ПЕРЕЗАПУСК* бота";
+        await ErrorNotificationService.Instance.SendErrorNotification(exception);
+        await ErrorNotificationService.Instance.SendErrorNotification(exception);
     }
 
     private async Task CreateCommandsKeyboard()
@@ -109,7 +117,10 @@ public class TelegramBotController
 
         var commands = new[]
         {
-            new BotCommand() { Command = GlobalData.START, Description = "Начать работу" }
+            new BotCommand() { Command = GlobalData.START, Description = "Начать работу" },
+            new BotCommand() { Command = GlobalData.QUESTION, Description = "Задать вопрос" },
+            new BotCommand() { Command = GlobalData.SPECIALIST, Description = "Консультация специалиста" }
+            
         };
         await _botClient.SetMyCommandsAsync(commands);
     }
@@ -139,12 +150,12 @@ public class TelegramBotController
             }
         });
 
-        await _botClient.SendTextMessageAsync(chatId, subscriptionMessage,
+        await _botClient.SafeSendTextMessageAsync(chatId, subscriptionMessage,
             replyMarkup: inlineKeyboardMarkup);
     }
     catch (ApiRequestException exception)
     {
-        Console.WriteLine(exception);
+        await ErrorNotificationService.Instance.SendErrorNotification(exception);
     }
 }
     private async Task DeleteMessageAsync(long chatId,int messageId, CancellationToken cancellationToken)
@@ -155,7 +166,7 @@ public class TelegramBotController
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            await ErrorNotificationService.Instance.SendErrorNotification(e);
         }
     }
 }

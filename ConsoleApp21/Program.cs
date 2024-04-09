@@ -21,10 +21,15 @@ class Program
         var settings = JsonConvert.DeserializeObject<AppSettings>(settingsJson);
 
         var botClient = new TelegramBotClient(secrets.ApiKeys.TelegramKey);
-        var subscriptionService = new SubscriptionService(botClient, settings.SubscribeChannelId);
-        IChatGptService chatGptService = new ChatGptService(secrets.ApiKeys.OpenAiKey, settings);
         
-        var chatStateMachine = new ChatStateMachine(botClient,settings,chatGptService);
+        ErrorNotificationService.Initialize(botClient, settings.ErrorsLogChannelId, settings.ErrorsFilePath);
+        
+        var subscriptionService = new SubscriptionService(botClient, settings.SubscribeChannelId,settings.ManagerChannelId);
+        IChatGptService chatGptService = new ChatGptService(secrets.ApiKeys.OpenAiKey, settings);
+
+        var user = new UserDataProvider();
+        
+        var chatStateMachine = new ChatStateMachine(botClient,settings,chatGptService,user);
         var chatStateController = new ChatStateController(chatStateMachine);
         
         var telegramBotController = new TelegramBotController(botClient,subscriptionService,chatStateController);

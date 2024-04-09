@@ -17,7 +17,7 @@ public class ChatGptService:IChatGptService
             var completionResult = await _openAiService.ChatCompletion.CreateCompletion(
                 new ChatCompletionCreateRequest
                 {
-                    Model = Models.ChatGpt3_5Turbo0301,
+                    Model = Models.Gpt_3_5_Turbo_16k,
                     Messages = new List<ChatMessage>()
                     {
                         new(StaticValues.ChatMessageRoles.System, _prompt),
@@ -32,11 +32,11 @@ public class ChatGptService:IChatGptService
             }
             var errorMessage = $"OpenAi API Error:\n{completionResult.Error.Code}\n{completionResult.Error.Message}";
             Console.WriteLine(errorMessage);
-            return null;
+            return "Ответ";
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            await ErrorNotificationService.Instance.SendErrorNotification(e);
             return null;
         }
     }
